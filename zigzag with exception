@@ -1,0 +1,78 @@
+import java.util.Scanner;
+
+class ZigZag implements Runnable {
+    int[][] matrix;
+    int startRow;
+    int cols;
+    long sum;
+    ZigZag(int[][] matrix, int startRow, int cols) {
+        this.matrix = matrix;
+        this.startRow = startRow;
+        this.cols = cols;
+        sum = 0;
+    }
+    public void run() {
+        int row = startRow;
+        int col = 0;
+        boolean goingDown = true;
+        while (row < matrix.length && col < cols) {
+            sum += matrix[row][col];
+            if (goingDown) {
+                if (col == cols - 1) {
+                    row++;
+                    goingDown = false;
+                } else if (row == 0) {
+                    col++;
+                    goingDown = false;
+                } else {
+                    row--;
+                    col++;
+                }
+            } else {
+                if (row == matrix.length - 1) {
+                    col++;
+                    goingDown = true;
+                } else if (col == 0) {
+                    row++;
+                    goingDown = true;
+                } else {
+                    row++;
+                    col--;
+                }
+            }
+        }
+    }long getSum() {
+        return sum;
+    }
+}public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        int rows = scanner.nextInt();
+        int cols = scanner.nextInt();
+        int[][] matrix = new int[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                matrix[i][j] = scanner.nextInt();
+            }
+        }
+        Thread[] threads = new Thread[rows];
+        ZigZag[] calculators = new ZigZag[rows];
+        for (int i = 0; i < rows; i++) {
+            calculators[i] = new ZigZag(matrix, i, cols);
+            threads[i] = new Thread(calculators[i]);
+            threads[i].start();
+        }
+        try {
+            for (int i = 0; i < rows; i++) {
+                threads[i].join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        long totalSum = 0;
+        for (int i = 0; i < rows; i++) {
+            totalSum += calculators[i].getSum();
+        }
+        System.out.println("The sum of Zig-Zag pattern is " + totalSum);
+    }
+}
